@@ -8,13 +8,13 @@ PROJECT_DIR=`dirname ${SH_DIR}`
 DEPEND_DIR=${PROJECT_DIR}/dependencies
 LIBS_DIR=${PROJECT_DIR}/libs
 
-LUA_DIR=${DEPEND_DIR}/lua-5.4.3
-SOL2_DIR=${DEPEND_DIR}/sol2-develop
-LIBUV_DIR=${DEPEND_DIR}/libuv-1.x
+LUA_DIR=${DEPEND_DIR}/lua
+SOL2_DIR=${DEPEND_DIR}/sol2
+LIBUV_DIR=${DEPEND_DIR}/libuv
 
 LUA_PKG=${PACKAGE_DIR}/lua-5.4.3.tar.gz
-SOL2_PKG=${PACKAGE_DIR}/sol2-develop.zip
-LIBUV_PKG=${PACKAGE_DIR}/libuv-1.x.zip
+SOL2_PKG=${PACKAGE_DIR}/sol2-3.2.3.zip
+LIBUV_PKG=${PACKAGE_DIR}/libuv-1.34.0.zip
 
 
 
@@ -37,7 +37,8 @@ then
     echo "lua ok"
 else
     echo "lua decompression && compile"
-    tar -xvf ${LUA_PKG} -C ${DEPEND_DIR}
+    mkdir -p ${LUA_DIR}
+    tar -xvf ${LUA_PKG} --strip-components 1 -C ${LUA_DIR} 
     cd ${LUA_DIR} && make -j $(nproc)
     cp ${LUA_DIR}/src/liblua.a ${LIBS_DIR}
 fi
@@ -50,6 +51,7 @@ then
 else
     echo "sol2 decompression"
     unzip ${SOL2_PKG} -d ${DEPEND_DIR}
+    mv ${SOL2_DIR}-3.2.3 ${SOL2_DIR}
 fi
 
 
@@ -60,6 +62,7 @@ then
 else
     echo "libuv decompression && compile"
     unzip ${LIBUV_PKG} -d ${DEPEND_DIR}
+    mv ${LIBUV_DIR}-1.34.0 ${LIBUV_DIR}
     cd ${LIBUV_DIR}
     mkdir build && cd build && cmake .. && make -j $(nproc)
     cp ${LIBUV_DIR}/build/libuv_a.a ${LIBS_DIR}
