@@ -91,9 +91,9 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 
 # 包含路径
 include_directories("${ROOT_DIR}/dependencies/")
-include_directories("${ROOT_DIR}/dependencies/sol2/include")
+include_directories("${ROOT_DIR}/dependencies/sol2-develop/include")
 include_directories("${ROOT_DIR}/dependencies/lua-5.4.3/src")
-include_directories("${ROOT_DIR}/dependencies/libuv/include")
+include_directories("${ROOT_DIR}/dependencies/libuv-1.x/include")
 
 target_link_libraries(${PROJECT_NAME}   pthread ) 
 target_link_libraries(${PROJECT_NAME}   dl)
@@ -103,7 +103,7 @@ target_link_libraries(${PROJECT_NAME}   dl)
 
 # 添加外部静态
 add_library(lua STATIC IMPORTED)
-set_property(TARGET lua PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/dependencies/lua-5.4.3/src/liblua.a)
+set_property(TARGET lua PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/liblua.a)
 target_link_libraries(${PROJECT_NAME}  lua )
 
 
