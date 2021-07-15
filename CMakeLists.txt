@@ -63,7 +63,12 @@ SET(ROOT_DIR ${CMAKE_SOURCE_DIR})
 
 # 编译那些源码
 file(GLOB SOURCES 
-    "src/script/*.cpp" 
+    "src/common/*.c" 
+    "src/common/*.cpp" 
+    "src/utils/*.c" 
+    "src/utils/*.cpp" 
+    "src/network/*.c" 
+    "src/network/*.cpp" 
     )
 
 file(GLOB_RECURSE MAIN_FILE src/script/main.cpp)
@@ -81,39 +86,58 @@ file(GLOB_RECURSE TEST_SOURCE tests/*.cpp)
 
 
 
-# 编译目标
-add_executable(${PROJECT_NAME}  ${MAIN_FILE} ${SOURCES})
+# =========编译目标=========
+SET(STATIC_LIB_NAME ${PROJECT_NAME}-static)
+
+
+# 静态库
+add_library(${STATIC_LIB_NAME}  STATIC  
+    ${SOURCES})
+
+
+# 可执行程序    
+add_executable(${PROJECT_NAME}
+    ${MAIN_FILE})
+
+target_link_libraries(${PROJECT_NAME}
+    ${STATIC_LIB_NAME})
+
+
 include (utils)
-redefine_file_macro(${PROJECT_NAME})
+redefine_file_macro(${STATIC_LIB_NAME})
 
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
 # 包含路径
+include_directories("${ROOT_DIR}/src/common")
+include_directories("${ROOT_DIR}/src/network")
+include_directories("${ROOT_DIR}/src/utils")
 include_directories("${ROOT_DIR}/dependencies/")
 include_directories("${ROOT_DIR}/dependencies/sol2/include")
 include_directories("${ROOT_DIR}/dependencies/lua/src")
 include_directories("${ROOT_DIR}/dependencies/libuv/include")
 
-target_link_libraries(${PROJECT_NAME}   pthread ) 
-target_link_libraries(${PROJECT_NAME}   dl)
+# target_link_libraries(${STATIC_LIB_NAME}   pthread ) 
+target_link_libraries(${STATIC_LIB_NAME}   dl)
 
 
-
+# Threads
+find_package(Threads REQUIRED)
 
 # 添加外部静态
 add_library(lua STATIC IMPORTED)
 set_property(TARGET lua PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/liblua.a)
-target_link_libraries(${PROJECT_NAME}  lua )
+target_link_libraries(${STATIC_LIB_NAME}  lua )
 
 
 add_library(libuv STATIC IMPORTED)
 set_property(TARGET libuv PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libuv_a.a)
-target_link_libraries(${PROJECT_NAME}  libuv )
+target_link_libraries(${STATIC_LIB_NAME}  libuv )
 
 
 
-
+add_subdirectory(${ROOT_DIR}/example/cpp)
 
 # test
 find_package(GTest)
@@ -138,8 +162,8 @@ if(GTEST_FOUND)
     
     target_link_libraries(test  lua )
     target_link_libraries(test  libuv)
-    target_link_libraries(test  pthread ) 
     target_link_libraries(test  dl)
+    target_link_libraries(test  Threads::Threads)
     
     
 endif(GTEST_FOUND)
