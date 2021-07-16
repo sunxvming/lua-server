@@ -11,16 +11,17 @@
 #include "HttpEvent.h"
 #include "PoolObject.h"
 #include "HttpParser.h"
-
+ #include <unistd.h>
+ 
 enum http_content_type
 {
-	hct_text_html ,	//HTML格式
-	hct_text_plain,	//纯文本格式
-	hct_text_xml,	//XML格式
-	hct_text_json,	//json格式
-	hct_image_gif,	//gif图片格式
-	hct_image_jpeg,	//jpg图片格式
-	hct_image_png,	//png图片格式
+	hct_text_html ,	//HTML锟斤拷式
+	hct_text_plain,	//锟斤拷锟侥憋拷锟斤拷式
+	hct_text_xml,	//XML锟斤拷式
+	hct_text_json,	//json锟斤拷式
+	hct_image_gif,	//gif图片锟斤拷式
+	hct_image_jpeg,	//jpg图片锟斤拷式
+	hct_image_png,	//png图片锟斤拷式
 
 };
 
