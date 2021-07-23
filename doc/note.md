@@ -342,9 +342,180 @@ ObjectPool
 CommonPool
 
 
+Task
+    virtual void process() = 0;   // 子类需要实现的接口，作为主要处理的逻辑
+    virtual void complete() = 0;  // 
+
+CThread
+    构造时创建并开启线程，线程传入的函数为CThread::backfunc
+    
+    backfunc()
+        t->onStart()     // t = CThread
+        if t->_isrun
+            从_waitTasks队列中取task，然后进行处理
+            t->run(task);
+                task->process(); 调用task的process()接口
+            处理完了之后将任务放到_completeTasks中
+            t->_pool->_completeTasks.push(task)
+        t->onEnd()
+          
+ThreadPool
+    成员变量
+		std::vector<CThread *> _threads;
+		TQueue<TaskPtr> _waitTasks;
+		TQueue<TaskPtr> _completeTasks;    
+
+    create()
+        创建线程并push到_threads中
+    addTask()
+        将task push到_waitTasks中
+    update()
+        从_completeTasks中取task
+        task->complete()
+        completeTask(task)
+    popWaitTask()
+        从_waitTasks中pop出task，以交给thread处理
+        
+
 ```
 
 
+
+## 数据库模块
+```
+DB_Interface
+    m_ip,m_port
+    connect()
+    detach()
+    execute()
+    getError()
+    getErrno()
+
+
+DBInterfaceMysql:DB_Interface
+    connect()
+    detach()
+        mysql_close()
+    execute()
+        mysql_real_query()
+        mysql_store_result()
+        static_cast<MysqlResult *>(result)->setResult(pResult); // 将结果设置到MysqlResult的pResult中
+
+    MySQL::libraryInit()
+        mysql_library_init()
+    MySQL::libraryEnd()
+        mysql_library_end()
+    MySQL::threadSafe()
+        mysql_thread_safe()
+
+
+DBResult
+    isEmpty()
+    fetch()
+    getRowCount()
+    getFieldsCount()
+    getDate()
+
+
+MysqlResult:DBResult
+    fetch()
+        mysql_fetch_row()  //从pResult中mysql_fetch_row到aRow中
+    getRowCount()
+        mysql_num_rows()
+    getFieldsCount()
+        mysql_num_fields()
+    setResult()
+        执行DBInterfaceMysql::execute()的时候会将结果复制给pResult
+    
+    成员变量：
+        MYSQL_RES * pResult;  // 代表所有结果，每次fetch()时会从pResult中fetch一条
+        MYSQL_ROW aRow;       // 代表一行结果，每次fetch()的时候将结果赋给aRow
+        uint32 pos;           // 代表一行结果中字段的位置
+    
+SqlResultSet:DBResult
+    fetch()
+    setResult()
+        主要是往m_fields设置结果集
+    getXXX()
+        getField()
+
+    成员变量
+        std::vector<SqlField> m_fields;   // 结果集在m_fields中
+        int64 m_currRowIdx;   //考row和col来从结果集中取数据
+        int32 m_currColIdx;
+        int64 m_rowCount;
+        int32 m_fieldCount
+
+SqlPrepare
+    SqlPrepare()
+        构造的时候初始化MYSQL_BIND m_paramBind
+    prepare()
+    execute()
+        static_cast<SqlResultSet*>(resultSet)->setResult()
+    pushxxx()
+        最终会调用SetParameterValue()
+    SetParameterValue()
+        设置MYSQL_BIND的值
+    
+
+
+DBTask:Task
+
+DBSqlTask:DBTask
+
+DBRedisTask:DBTask
+
+
+DBThread:CThread
+    onStart()
+        1.根据DBThreadPool的config判断是生成DBInterfaceMysql还是DBInterfaceRedis
+        2.DB_Interface::connect()
+    run()
+        设置task的DB_Interface
+        CThread::run(task);
+    onEnd()
+        delete DB_Interface
+
+DBThreadPool:ThreadPool
+    createThread()
+        new DBThread(this);
+    deleteThread()
+        delete CThread
+    completeTask()
+        方法体为空
+
+```
+
+### mysql接口
+连接数据库、执行语句
+mysql_init()
+mysql_options()
+mysql_real_connect()
+mysql_real_query()
+mysql_store_result()
+mysql_close()
+
+取数据
+mysql_fetch_row()
+mysql_num_rows()
+mysql_num_fields()
+
+sql语句绑定参数
+mysql_stmt_init()
+mysql_stmt_prepare()
+mysql_stmt_param_count()
+mysql_stmt_attr_set()
+
+mysql_stmt_bind_param()
+mysql_stmt_execute()
+mysql_stmt_result_metadata()
+mysql_stmt_store_result()
+mysql_stmt_affected_rows()
+mysql_free_result()
+
+
+mysql_error()
+mysql_errno()
 
 
 ## 第三方插件
