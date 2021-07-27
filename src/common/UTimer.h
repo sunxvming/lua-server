@@ -46,7 +46,7 @@ private:
 
 	/*
 		uv_timer_t m_timer; 
-		£¨This is the wrong approach£©
+		ï¼ˆThis is the wrong approachï¼‰
 
 		class Test
 		{

@@ -11,10 +11,14 @@ LIBS_DIR=${PROJECT_DIR}/libs
 LUA_DIR=${DEPEND_DIR}/lua
 SOL2_DIR=${DEPEND_DIR}/sol2
 LIBUV_DIR=${DEPEND_DIR}/libuv
+HIREDIS_DIR=${DEPEND_DIR}/hiredis
+MYSQL_DIR=${DEPEND_DIR}/mysql
 
 LUA_PKG=${PACKAGE_DIR}/lua-5.4.3.tar.gz
 SOL2_PKG=${PACKAGE_DIR}/sol2-3.2.3.zip
 LIBUV_PKG=${PACKAGE_DIR}/libuv-1.34.0.zip
+HIREDIS_PKG=${PACKAGE_DIR}/hiredis-1.0.0.tar.gz
+MYSQL_PKG=${PACKAGE_DIR}/mysql-5.7.16-linux-glibc2.5-x86_64.zip
 
 
 
@@ -68,3 +72,28 @@ else
     cp ${LIBUV_DIR}/build/libuv_a.a ${LIBS_DIR}
 fi
 
+
+
+# hiredis
+if [ -d ${HIREDIS_DIR} ]
+then 
+    echo "hiredis ok"
+else
+    echo "hiredis decompression && compile"
+    mkdir -p ${HIREDIS_DIR}
+    tar -xvf ${HIREDIS_PKG} --strip-components 1 -C ${HIREDIS_DIR} 
+    cd ${HIREDIS_DIR} && make -j $(nproc)
+    cp ${HIREDIS_DIR}/libhiredis.a ${LIBS_DIR}
+fi
+
+
+# mysql
+if [ -d ${MYSQL_DIR} ]
+then 
+    echo "mysql ok"
+else
+    echo "mysql header file decompression"
+    unzip ${MYSQL_PKG} -d ${DEPEND_DIR}
+    mv ${MYSQL_DIR}-5.7.16-linux-glibc2.5-x86_64 ${MYSQL_DIR}
+    cp ${PACKAGE_DIR}/libmysqlclient.a ${LIBS_DIR}
+fi

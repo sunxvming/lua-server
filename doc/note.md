@@ -342,12 +342,14 @@ ObjectPool
 CommonPool
 
 
+线程池：Task、CThread、ThreadPool
+---------------------------------------
 Task
     virtual void process() = 0;   // 子类需要实现的接口，作为主要处理的逻辑
     virtual void complete() = 0;  // 
 
 CThread
-    构造时创建并开启线程，线程传入的函数为CThread::backfunc
+    构造时创建并开启线程，线程运行的函数为CThread::backfunc
     
     backfunc()
         t->onStart()     // t = CThread
@@ -358,21 +360,29 @@ CThread
             处理完了之后将任务放到_completeTasks中
             t->_pool->_completeTasks.push(task)
         t->onEnd()
-          
+    run()
+        task->process();
+
+
+    
 ThreadPool
     成员变量
 		std::vector<CThread *> _threads;
-		TQueue<TaskPtr> _waitTasks;
-		TQueue<TaskPtr> _completeTasks;    
+		TQueue<TaskPtr> _waitTasks;        // 类型为ConcurrentQueue
+		TQueue<TaskPtr> _completeTasks;    // 类型为ConcurrentQueue
+
+    virtual CThread* createThread() = 0;
 
     create()
-        创建线程并push到_threads中
+        创建n个线程并push到_threads中
+        其中调用createThread去真正创建线程，不用的继承类可以有不同的实现
     addTask()
         将task push到_waitTasks中
     update()
+        处理已经完成的任务，主要是调用完成后的回调函数
         从_completeTasks中取task
-        task->complete()
-        completeTask(task)
+        task->complete()   // 逻辑由Task的继承类来实现
+        DBThreadPool::completeTask(task)
     popWaitTask()
         从_waitTasks中pop出task，以交给thread处理
         
@@ -391,7 +401,8 @@ DB_Interface
     getError()
     getErrno()
 
-
+mysql
+-----------------------
 DBInterfaceMysql:DB_Interface
     connect()
     detach()
@@ -451,6 +462,10 @@ SqlPrepare
         构造的时候初始化MYSQL_BIND m_paramBind
     prepare()
     execute()
+        _query()
+            mysql_stmt_bind_param()
+            mysql_stmt_execute()
+        mysql_stmt_store_result()    
         static_cast<SqlResultSet*>(resultSet)->setResult()
     pushxxx()
         最终会调用SetParameterValue()
@@ -458,12 +473,66 @@ SqlPrepare
         设置MYSQL_BIND的值
     
 
+redis
+----------------------------
+DBInterfaceRedis::DB_Interface
+    成员变量
+        redisContext * m_context;
+    connect()
+        hiredis-->redisConnect()
+    detach()
+        hiredis-->redisFree()
+    execute(DBResult * result, const char * cmd, int len)
+        redisCommand()
+        static_cast<RedisResult *>(result)->setResult(pRedisReply);
+        
+    execute(RedisCommand * command, DBResult * result
+        redisCommandArgv()
+        static_cast<RedisResult *>(result)->setResult(pRedisReply);
+    ping()
+        发送ping Command，看是否恢复PONG，用来测试redis是否连通
 
+RedisCommand
+    用来构造redis的命令
+
+
+RedisResult
+    fetch()
+        根据getRowCount()判断是否还有数据
+    getRowCount()
+        
+    getFieldsCount()
+
+    setResult()
+        执行DBInterfaceRedis::execute()的时候会将结果复制给m_reply
+    
+    成员变量：
+        redisReply * m_reply;   // redis返回的结果集
+        uint32 pos              // 在结果集的element中所处的位置
+
+
+数据库线程池
+------------------------
 DBTask:Task
+    dbi()
+        设置DB_Interface，是mysql的还是redis的
+
 
 DBSqlTask:DBTask
+    process()
+        SqlPrepare::prepare()
+        SqlPrepare::execute()
+    complete()
+        若有backfunc回调函数，则调用backfunc回调函数
+        函调函数的逻辑为：从SqlResultSet中取数据
+
 
 DBRedisTask:DBTask
+    process()
+        调用DBInterfaceRedis::execute()
+    complete()
+        若有backfunc回调函数，则调用backfunc回调函数
+        函调函数的逻辑为：从SqlResultSet中取数据
 
 
 DBThread:CThread

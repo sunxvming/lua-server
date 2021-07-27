@@ -75,6 +75,8 @@ file(GLOB SOURCES
     "src/network/*.cpp" 
     "src/script/*.c" 
     "src/script/*.cpp"    
+    "src/db/*.c" 
+    "src/db/*.cpp"        
     )
 
 file(GLOB_RECURSE MAIN_FILE src/script/main.cpp)
@@ -121,15 +123,19 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 include_directories("${ROOT_DIR}/src/common")
 include_directories("${ROOT_DIR}/src/network")
 include_directories("${ROOT_DIR}/src/utils")
+include_directories("${ROOT_DIR}/src/db")
 include_directories("${ROOT_DIR}/dependencies/")
 include_directories("${ROOT_DIR}/dependencies/sol2/include")
 include_directories("${ROOT_DIR}/dependencies/lua/src")
 include_directories("${ROOT_DIR}/dependencies/libuv/include")
+include_directories("${ROOT_DIR}/dependencies/mysql")
+include_directories("${ROOT_DIR}/dependencies/hiredis")
 
 
 # ============ 静态库、动态库 ============
 # target_link_libraries(${STATIC_LIB_NAME}   pthread ) 
 target_link_libraries(${STATIC_LIB_NAME}   dl)
+target_link_libraries(${STATIC_LIB_NAME}   z)
 
 
 
@@ -142,6 +148,16 @@ target_link_libraries(${STATIC_LIB_NAME}  lua )
 add_library(libuv STATIC IMPORTED)
 set_property(TARGET libuv PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libuv_a.a)
 target_link_libraries(${STATIC_LIB_NAME}  libuv )
+
+
+add_library(libmysqlclient STATIC IMPORTED)
+set_property(TARGET libmysqlclient PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libmysqlclient.a)
+target_link_libraries(${STATIC_LIB_NAME}  libmysqlclient )
+
+add_library(libhiredis STATIC IMPORTED)
+set_property(TARGET libhiredis PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libhiredis.a)
+target_link_libraries(${STATIC_LIB_NAME}  libhiredis )
+
 
 # ============ 子目录编译目标 ============
 add_subdirectory(${ROOT_DIR}/example/cpp)
@@ -167,9 +183,12 @@ if(GTEST_FOUND)
     # CMAKE_THREAD_LIBS_INIT:-lpthread, gtest依赖于线程库
     # message("CMAKE_THREAD_LIBS_INIT:${CMAKE_THREAD_LIBS_INIT}")    
     target_link_libraries(test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(test z)
     
     target_link_libraries(test  lua )
     target_link_libraries(test  libuv)
+    target_link_libraries(test  libmysqlclient)
+    target_link_libraries(test  libhiredis)
     target_link_libraries(test  dl)
     target_link_libraries(test  Threads::Threads)
 endif(GTEST_FOUND)

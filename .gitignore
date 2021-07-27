@@ -18,7 +18,6 @@
 
 # Libraries
 *.lib
-*.a
 *.la
 *.lo
 
@@ -60,3 +59,6 @@ build/
 
 # third part dependency
 dependencies/
+
+
+libs/

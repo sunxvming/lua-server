@@ -47,5 +47,13 @@ target_link_libraries(http_server_ext
     Threads::Threads)    
 
 
-    
+# mysql
+add_executable(mysql_test
+mysql_test.cpp)
+
+target_link_libraries(mysql_test
+    ${STATIC_LIB_NAME}
+    Threads::Threads)
+
+
     

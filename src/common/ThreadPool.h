@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include <thread>
 #include "TQueue.h"
 
@@ -50,7 +51,10 @@ namespace Thread
 		void update();
 	protected:
 		virtual CThread* createThread() = 0;
-		virtual void deleteThread(CThread * t) = 0;
+		virtual void deleteThread(CThread * t)
+		{
+			delete t;
+		}
 		virtual void completeTask(TaskPtr task) = 0;
 	private:
 		TaskPtr popWaitTask();

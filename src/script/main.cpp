@@ -16,8 +16,9 @@ extern void luabind_kcpserver(sol::state & lua);
 extern void luabind_websocket(sol::state & lua);
 extern void luabind_eventloop(sol::state & lua);
 extern void luabind_httpserver(sol::state & lua);
-
-
+extern void luabind_mysql(sol::state & lua);
+extern void luabind_redis(sol::state & lua);
+extern void luabind_common(sol::state & lua);
 
 
 int main(int argc, char* argv[])
@@ -32,6 +33,10 @@ int main(int argc, char* argv[])
 	luabind_websocket(lua);
 	luabind_eventloop(lua);
 	luabind_httpserver(lua);
+	luabind_mysql(lua);
+	luabind_redis(lua);
+	luabind_common(lua);
+
 
 	if (luaL_dofile(lua.lua_state(), argv[1]) == 1) {
 		if (lua_isstring(lua.lua_state(), -1)) {
