@@ -43,6 +43,9 @@ private:
 
 private:
 	std::vector<std::vector<uint8>> m_param;
-	std::vector<int> m_len;
+	// void *redisCommandArgv(redisContext *c, int argc, const char **argv, const size_t *argvlen);
+	// 因为redisCommandArgv最后一个参数是size_t类型的，所以m_len的类型为size_t,若为int类型的话在返回(size_t *)m_len.data()的时候由于
+	// 类型转换的问题会导致redisCommandArgv()函数调用失败
+	std::vector<size_t> m_len;   
 };
 

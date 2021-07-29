@@ -1,4 +1,6 @@
 #include <string>
+#include <stdlib.h>
+#include <iostream>
 #include "hiredis.h"
 #include "DB_Interface_redis.h"
 #include "XLog.h"
@@ -20,7 +22,7 @@ DBInterfaceRedis::~DBInterfaceRedis()
 bool DBInterfaceRedis::connect()
 {
 	redisContext* c = redisConnect(m_ip.c_str(), (int)m_port);
-	if (c->err)
+	if (c == nullptr || c->err)
 	{
 		ERROR_LOG("DBInterfaceRedis::attach: errno=%d, error=%s\n", c->err, c->errstr);
 
@@ -37,8 +39,10 @@ bool DBInterfaceRedis::connect()
 
 bool DBInterfaceRedis::detach()
 {
+
 	if (m_context)
 	{
+		/* Disconnects and frees the context */
 		redisFree(m_context);
 		m_context = NULL;
 	}
@@ -99,7 +103,7 @@ bool DBInterfaceRedis::ping()
 		freeReplyObject(pRedisReply);
 		return false;
 	}
-
+	printf("PING: %s\n", pRedisReply->str);
 	freeReplyObject(pRedisReply);
 	return true;
 }

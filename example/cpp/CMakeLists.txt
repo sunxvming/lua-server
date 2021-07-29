@@ -55,5 +55,11 @@ target_link_libraries(mysql_test
     ${STATIC_LIB_NAME}
     Threads::Threads)
 
+# mysql
+add_executable(redis_test
+redis_test.cpp)
 
+target_link_libraries(redis_test
+    ${STATIC_LIB_NAME}
+    Threads::Threads)
     
