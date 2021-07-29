@@ -63,3 +63,21 @@ target_link_libraries(redis_test
     ${STATIC_LIB_NAME}
     Threads::Threads)
     
+
+
+# json_test
+add_executable(json_test
+json_test.cpp)
+
+target_link_libraries(json_test
+    ${STATIC_LIB_NAME}
+    Threads::Threads)
+
+
+# timer_test
+add_executable(timer_test
+timer_test.cpp)
+
+target_link_libraries(timer_test
+    ${STATIC_LIB_NAME}
+    Threads::Threads)

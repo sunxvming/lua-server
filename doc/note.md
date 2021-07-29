@@ -387,6 +387,20 @@ ThreadPool
         从_waitTasks中pop出task，以交给thread处理
         
 
+
+csv文件
+---------------
+CsvRow
+    成员变量
+        std::vector<std::string> _values;
+    
+CsvParser
+    成员变量
+        std::vector<std::string> _header;
+        std::vector<CsvRow> _content;
+
+
+
 ```
 
 
@@ -486,15 +500,15 @@ DBInterfaceRedis::DB_Interface
         redisCommand()
         static_cast<RedisResult *>(result)->setResult(pRedisReply);
         
-    execute(RedisCommand * command, DBResult * result
-        redisCommandArgv()
+    execute(RedisCommand * command, DBResult * result)
+        redisCommandArgv()  //这个可以传递多个参数，并且可以支持二进制的数据
         static_cast<RedisResult *>(result)->setResult(pRedisReply);
     ping()
         发送ping Command，看是否恢复PONG，用来测试redis是否连通
 
 RedisCommand
     用来构造redis的命令
-
+    最终会将构造的命令传递给redisCommandArgv()函数进行命令的执行
 
 RedisResult
     fetch()
