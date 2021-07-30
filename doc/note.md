@@ -594,6 +594,7 @@ DBThreadPool:ThreadPool
 ```
 
 ### mysql接口
+```
 连接数据库、执行语句
 mysql_init()
 mysql_options()
@@ -623,6 +624,13 @@ mysql_free_result()
 
 mysql_error()
 mysql_errno()
+```
+
+
+## protobuf模块
+此模块的源码来自于github上的[protolua](https://github.com/jinjiazhang/protolua)工程，实现了在lua中对protobuf message对象的序列化和反序列化。
+原始工程中是将protobuf message对象的序列化和反序列化的方法等通过c lua api导入到lua环境中，然后将c++源代码编译成名字为protolua的动态库以供lua中使用。
+在lua的代码中使用时只需加入`require "protolua"`，就可以使用protobuf相关的方法了。
 
 
 ## 第三方插件
