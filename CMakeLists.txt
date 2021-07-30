@@ -77,6 +77,8 @@ file(GLOB SOURCES
     "src/script/*.cpp"    
     "src/db/*.c" 
     "src/db/*.cpp"        
+    "src/protolua/*.c"        
+    "src/protolua/*.cpp"        
     )
 
 file(GLOB_RECURSE MAIN_FILE src/script/main.cpp)
@@ -130,6 +132,7 @@ include_directories("${ROOT_DIR}/dependencies/lua/src")
 include_directories("${ROOT_DIR}/dependencies/libuv/include")
 include_directories("${ROOT_DIR}/dependencies/mysql")
 include_directories("${ROOT_DIR}/dependencies/hiredis")
+include_directories("${ROOT_DIR}/dependencies/protobuf/src")
 
 
 # ============ 静态库、动态库 ============
@@ -158,6 +161,9 @@ add_library(libhiredis STATIC IMPORTED)
 set_property(TARGET libhiredis PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libhiredis.a)
 target_link_libraries(${STATIC_LIB_NAME}  libhiredis )
 
+add_library(libprotobuf STATIC IMPORTED)
+set_property(TARGET libprotobuf PROPERTY IMPORTED_LOCATION ${ROOT_DIR}/libs/libprotobuf.a)
+target_link_libraries(${STATIC_LIB_NAME}  libprotobuf )
 
 # ============ 子目录编译目标 ============
 add_subdirectory(${ROOT_DIR}/example/cpp)

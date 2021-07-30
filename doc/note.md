@@ -400,7 +400,31 @@ CsvParser
         std::vector<CsvRow> _content;
 
 
+json
+-----------------
+JBaseObj
+    type
+    write()
+        将json对象转换成json字符串
 
+JValue:JBaseObj
+    用一个枚举和string来表示一个json的值
+JArray:JBaseObj
+    成员变量：
+        std::vector<JBaseObj *> items;   //按index进行索引
+
+JSonObj:JBaseObj
+    成员变量：
+        std::vector<JBaseObj *> items;    //按key进行索引
+
+JsonBuff
+    
+
+JsonReader
+    parser()
+        解析json串为json对象
+    write()
+        将json对象转换成json字符串
 ```
 
 

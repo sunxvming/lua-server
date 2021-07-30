@@ -22,6 +22,8 @@ extern void luabind_common(sol::state & lua);
 extern void luabind_csvpar(sol::state & lua);
 extern void luabind_json(sol::state & lua);
 
+extern int luaopen_protolua(lua_State* L);
+
 int main(int argc, char* argv[])
 {
 	sol::state lua;
@@ -39,6 +41,8 @@ int main(int argc, char* argv[])
 	luabind_common(lua);
 	luabind_csvpar(lua);
 	luabind_json(lua);
+
+	luaopen_protolua(lua.lua_state());
 
 	if (luaL_dofile(lua.lua_state(), argv[1]) == 1) {
 		if (lua_isstring(lua.lua_state(), -1)) {

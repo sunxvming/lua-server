@@ -13,12 +13,15 @@ SOL2_DIR=${DEPEND_DIR}/sol2
 LIBUV_DIR=${DEPEND_DIR}/libuv
 HIREDIS_DIR=${DEPEND_DIR}/hiredis
 MYSQL_DIR=${DEPEND_DIR}/mysql
+PROTOBUF_DIR=${DEPEND_DIR}/protobuf
+
 
 LUA_PKG=${PACKAGE_DIR}/lua-5.4.3.tar.gz
 SOL2_PKG=${PACKAGE_DIR}/sol2-3.2.3.zip
 LIBUV_PKG=${PACKAGE_DIR}/libuv-1.34.0.zip
 HIREDIS_PKG=${PACKAGE_DIR}/hiredis-1.0.0.tar.gz
 MYSQL_PKG=${PACKAGE_DIR}/mysql-5.7.16-linux-glibc2.5-x86_64.zip
+PROTOBUF_PKG=${PACKAGE_DIR}/protobuf-3.11.1.zip
 
 
 
@@ -96,4 +99,18 @@ else
     unzip ${MYSQL_PKG} -d ${DEPEND_DIR}
     mv ${MYSQL_DIR}-5.7.16-linux-glibc2.5-x86_64 ${MYSQL_DIR}
     cp ${PACKAGE_DIR}/libmysqlclient.a ${LIBS_DIR}
+fi
+
+
+
+# protobuf
+cd $SHDIR
+if [ -d ${PROTOBUF_DIR} ]
+then 
+    echo "protobuf ok"
+else
+    unzip ${PROTOBUF_PKG} -d ${DEPEND_DIR}
+    mv ${PROTOBUF_DIR}-3.11.1 ${PROTOBUF_DIR}
+    cd ${PROTOBUF_DIR} && ./autogen.sh && ./configure && make -j$(nproc)
+    cp ${PROTOBUF_DIR}/src/.libs/libprotobuf.a ${LIBS_DIR}
 fi

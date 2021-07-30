@@ -81,3 +81,15 @@ timer_test.cpp)
 target_link_libraries(timer_test
     ${STATIC_LIB_NAME}
     Threads::Threads)
+
+
+
+# timer_test
+add_executable(protobuf_client_test
+    protobuf_test/client/protobuf_client_test.cpp
+    protobuf_test/client/msgtest.pb.cc
+    )
+
+target_link_libraries(protobuf_client_test
+    ${STATIC_LIB_NAME}
+    Threads::Threads)
