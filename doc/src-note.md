@@ -1,7 +1,104 @@
 
+> 此文件为本工程各个模块源码文件的详细说明
+
+## 通用模块
+
+```
+ObjectPool
+    对象池，目的是做到对象的重复利用，以减少内存重复的分配和回收
+
+CommonPool
+
+
+线程池：Task、CThread、ThreadPool
+---------------------------------------
+Task
+    virtual void process() = 0;   // 子类需要实现的接口，作为主要处理的逻辑
+    virtual void complete() = 0;  // 
+
+CThread
+    构造时创建并开启线程，线程运行的函数为CThread::backfunc
+    
+    backfunc()
+        t->onStart()     // t = CThread
+        if t->_isrun
+            从_waitTasks队列中取task，然后进行处理
+            t->run(task);
+                task->process(); 调用task的process()接口
+            处理完了之后将任务放到_completeTasks中
+            t->_pool->_completeTasks.push(task)
+        t->onEnd()
+    run()
+        task->process();
+
+
+    
+ThreadPool
+    成员变量
+		std::vector<CThread *> _threads;
+		TQueue<TaskPtr> _waitTasks;        // 类型为ConcurrentQueue
+		TQueue<TaskPtr> _completeTasks;    // 类型为ConcurrentQueue
+
+    virtual CThread* createThread() = 0;
+
+    create()
+        创建n个线程并push到_threads中
+        其中调用createThread去真正创建线程，不用的继承类可以有不同的实现
+    addTask()
+        将task push到_waitTasks中
+    update()
+        处理已经完成的任务，主要是调用完成后的回调函数
+        从_completeTasks中取task
+        task->complete()   // 逻辑由Task的继承类来实现
+        DBThreadPool::completeTask(task)
+    popWaitTask()
+        从_waitTasks中pop出task，以交给thread处理
+        
+
+
+csv文件
+---------------
+CsvRow
+    成员变量
+        std::vector<std::string> _values;
+    
+CsvParser
+    成员变量
+        std::vector<std::string> _header;
+        std::vector<CsvRow> _content;
+
+
+json
+-----------------
+JBaseObj
+    type
+    write()
+        将json对象转换成json字符串
+
+JValue:JBaseObj
+    用一个枚举和string来表示一个json的值
+JArray:JBaseObj
+    成员变量：
+        std::vector<JBaseObj *> items;   //按index进行索引
+
+JSonObj:JBaseObj
+    成员变量：
+        std::vector<JBaseObj *> items;    //按key进行索引
+
+JsonBuff
+    
+
+JsonReader
+    parser()
+        解析json串为json对象
+    write()
+        将json对象转换成json字符串
+```
+
+
 
 ## 脚本模块
-
+本模块通过sol2库将各模块的c++对象导入到lua中，并提供执行lua脚本功能
 
 ## 网络模块
 
@@ -332,103 +429,6 @@ WebSocketServer : TcpServer
 
 
 
-
-## 通用模块
-
-```
-ObjectPool
-    对象池，目的是做到对象的重复利用，以减少内存重复的分配和回收
-
-CommonPool
-
-
-线程池：Task、CThread、ThreadPool
----------------------------------------
-Task
-    virtual void process() = 0;   // 子类需要实现的接口，作为主要处理的逻辑
-    virtual void complete() = 0;  // 
-
-CThread
-    构造时创建并开启线程，线程运行的函数为CThread::backfunc
-    
-    backfunc()
-        t->onStart()     // t = CThread
-        if t->_isrun
-            从_waitTasks队列中取task，然后进行处理
-            t->run(task);
-                task->process(); 调用task的process()接口
-            处理完了之后将任务放到_completeTasks中
-            t->_pool->_completeTasks.push(task)
-        t->onEnd()
-    run()
-        task->process();
-
-
-    
-ThreadPool
-    成员变量
-		std::vector<CThread *> _threads;
-		TQueue<TaskPtr> _waitTasks;        // 类型为ConcurrentQueue
-		TQueue<TaskPtr> _completeTasks;    // 类型为ConcurrentQueue
-
-    virtual CThread* createThread() = 0;
-
-    create()
-        创建n个线程并push到_threads中
-        其中调用createThread去真正创建线程，不用的继承类可以有不同的实现
-    addTask()
-        将task push到_waitTasks中
-    update()
-        处理已经完成的任务，主要是调用完成后的回调函数
-        从_completeTasks中取task
-        task->complete()   // 逻辑由Task的继承类来实现
-        DBThreadPool::completeTask(task)
-    popWaitTask()
-        从_waitTasks中pop出task，以交给thread处理
-        
-
-
-csv文件
----------------
-CsvRow
-    成员变量
-        std::vector<std::string> _values;
-    
-CsvParser
-    成员变量
-        std::vector<std::string> _header;
-        std::vector<CsvRow> _content;
-
-
-json
------------------
-JBaseObj
-    type
-    write()
-        将json对象转换成json字符串
-
-JValue:JBaseObj
-    用一个枚举和string来表示一个json的值
-JArray:JBaseObj
-    成员变量：
-        std::vector<JBaseObj *> items;   //按index进行索引
-
-JSonObj:JBaseObj
-    成员变量：
-        std::vector<JBaseObj *> items;    //按key进行索引
-
-JsonBuff
-    
-
-JsonReader
-    parser()
-        解析json串为json对象
-    write()
-        将json对象转换成json字符串
-```
-
-
-
 ## 数据库模块
 ```
 DB_Interface
@@ -627,10 +627,34 @@ mysql_errno()
 ```
 
 
-## protobuf模块
+## protobuf-lua模块
 此模块的源码来自于github上的[protolua](https://github.com/jinjiazhang/protolua)工程，实现了在lua中对protobuf message对象的序列化和反序列化。
 原始工程中是将protobuf message对象的序列化和反序列化的方法等通过c lua api导入到lua环境中，然后将c++源代码编译成名字为protolua的动态库以供lua中使用。
 在lua的代码中使用时只需加入`require "protolua"`，就可以使用protobuf相关的方法了。
+
+主要方法：
+```
+parse()  parse.cpp
+    读取`.proto`文件
+    生成message的Descriptor对象  const FileDescriptor* parsed_file = g_importer->Import(file)
+    
+decode() decoder.cpp
+    根据Message对象将消息流反序列化成真正的Message对象，message->ParseFromArray(input, size)
+    将Message对象转换成lua的table结构，并最终返回到lua中
+encode()  encoder.cpp
+    将lua的table结构序列化成protobuf的字节流
+    
+```
+
+### 其他的protobuf-lua方案
+- [lua-protobuf](https://github.com/starwing/lua-protobuf)
+This project offers a C module for Lua (5.1, 5.2, 5.3, 5.4 and LuaJIT) manipulating Google's protobuf protocol, both for version 2 and 3 syntax and semantics. It splits to the lower-level and the high-level parts for different goals.
+
+- [protoc-gen-lua](https://github.com/sean-lin/protoc-gen-lua)
+这种方式为通过`.proto`文件生成lua的proto对象，这个库的API类似于python的protobuf库。
+但是这个项目好几年没有跟新了，可能不支持protobuf3，且生成lua的proto文件稍麻烦，之前做的一款mmorpg游戏的lua中用的就是这种方式。
+
+
 
 
 ## 第三方插件
